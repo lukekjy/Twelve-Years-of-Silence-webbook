@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>열두 해의 침묵</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --paper: #faf7f2;
+    --ink: #1c1a17;
+    --ink-muted: #5a5550;
+    --ink-faint: #8a8580;
+    --accent: #7a3b2e;
+    --border: #d8d0c4;
+    --chapter-bg: #2b2420;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Serif KR', serif;
+    min-height: 100vh;
+  }
+  /* Top bar */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    background: var(--chapter-bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .topbar-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.12em;
+  }
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar {
+    width: 120px;
+    height: 2px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+    width: 0%;
+  }
+  .progress-pct {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-width: 32px;
+    text-align: right;
+  }
+
+  /* Sidebar TOC */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 52px;
+    bottom: 0;
+    width: 220px;
+    background: var(--chapter-bg);
+    padding: 1.5rem 0;
+    overflow-y: auto;
+    z-index: 90;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .sidebar::-webkit-scrollbar { width: 3px; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  .toc-label {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0 1.5rem 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 0.75rem;
+  }
+  .toc-item {
+    display: block;
+    padding: 0.45rem 1.5rem;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 300;
+    line-height: 1.5;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+  }
+  .toc-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
+  .toc-item.active { color: #e8c4a0; border-left-color: var(--accent); background: rgba(122,59,46,0.12); }
+  .toc-part {
+    font-size: 10px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.1em;
+    padding: 1rem 1.5rem 0.25rem;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  /* Main content */
+  .main {
+    margin-left: 220px;
+    padding-top: 52px;
+  }
+  .reader {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+  }
+
+  /* Cover */
+  .cover {
+    text-align: center;
+    padding: 5rem 0 4rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4rem;
+  }
+  .cover-badge {
+    display: inline-block;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .cover-title {
+    font-size: 3.2rem;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+  .cover-subtitle {
+    font-size: 14px;
+    color: var(--ink-faint);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    margin-bottom: 2.5rem;
+  }
+  .cover-ornament {
+    width: 48px;
+    height: 2px;
+    background: var(--accent);
+    margin: 0 auto 2rem;
+    opacity: 0.6;
+  }
+  .cover-epigraph {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--ink-muted);
+    font-weight: 300;
+    line-height: 1.8;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  /* Characters */
+  .chars-section {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+  }
+  .chars-title {
+    font-size: 11px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .char-row {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f0ece4;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .char-row:last-child { border-bottom: none; }
+  .char-name {
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 80px;
+    font-size: 13px;
+  }
+  .char-desc { color: var(--ink-muted); font-weight: 300; font-family: 'Noto Serif KR', serif; }
+
+  /* Part header */
+  .part-header {
+    background: var(--chapter-bg);
+    color: white;
+    margin: 3rem -2rem;
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  .part-number {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .part-title {
+    font-size: 1.8rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.9);
+  }
+
+  /* Chapter */
+  .chapter {
+    margin-bottom: 3.5rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .chapter:last-child { border-bottom: none; }
+  .chapter-header {
+    margin-bottom: 2rem;
+  }
+  .chapter-num {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .chapter-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .chapter-date {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-style: italic;
+    margin-top: 0.3rem;
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 300;
+  }
+
+  /* Body text */
+  .prose {
+    font-size: 16.5px;
+    line-height: 2.0;
+    color: var(--ink);
+    font-weight: 300;
+  }
+  .prose p {
+    margin-bottom: 1.4em;
+    text-indent: 1.2em;
+  }
+  .prose p:first-child { text-indent: 0; }
+  .prose .scene-break {
+    text-align: center;
+    color: var(--ink-faint);
+    margin: 2rem 0;
+    font-size: 20px;
+    letter-spacing: 0.5em;
+    text-indent: 0;
+  }
+  .prose .dialogue-em {
+    color: var(--ink);
+  }
+
+  /* Letter / document style */
+  .doc-box {
+    background: #fdf9f3;
+    border: 1px solid #ddd5c5;
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 1.5rem 1.75rem;
+    margin: 1.5rem 0;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--ink-muted);
+    font-weight: 300;
+  }
+  .doc-box p { margin-bottom: 0.9em; text-indent: 0; }
+  .doc-box p:last-child { margin-bottom: 0; }
+  .doc-box .doc-header {
+    font-size: 12px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--ink-faint);
+    letter-spacing: 0.12em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Epilogue */
+  .epilogue-note {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--ink-faint);
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+  .fin-mark {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--accent);
+  }
+
+  /* Scrollspy */
+  section { scroll-margin-top: 68px; }
+
+  @media (max-width: 768px) {
+    .sidebar { width: 0; overflow: hidden; }
+    .main { margin-left: 0; }
+    .part-header { margin: 3rem -1rem; padding: 2rem 1rem; }
+    .cover-title { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title">열두 해의 침묵</span>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="pf"></div></div>
+    <span class="progress-pct" id="pp">0%</span>
+  </div>
+</div>
+
+<nav class="sidebar">
+  <div class="toc-label">목차</div>
+  <a class="toc-item" href="#cover">표지</a>
+  <a class="toc-item" href="#chars">등장인물</a>
+  <a class="toc-item" href="#prologue">프롤로그</a>
+  <div class="toc-part">1부 — 귀환</div>
+  <a class="toc-item" href="#ch1">1장</a>
+  <a class="toc-item" href="#ch2">2장</a>
+  <a class="toc-item" href="#ch3">3장</a>
+  <div class="toc-part">2부 — 기억</div>
+  <a class="toc-item" href="#ch4">4장</a>
+  <a class="toc-item" href="#ch5">5장</a>
+  <a class="toc-item" href="#ch6">6장</a>
+  <a class="toc-item" href="#ch7">7장</a>
+  <div class="toc-part">3부 — 진실</div>
+  <a class="toc-item" href="#ch8">8장</a>
+  <a class="toc-item" href="#ch9">9장</a>
+  <a class="toc-item" href="#ch10">10장</a>
+  <a class="toc-item" href="#ch11">11장</a>
+  <div class="toc-part">4부 — 심판</div>
+  <a class="toc-item" href="#ch12">12장</a>
+  <a class="toc-item" href="#ch13">13장</a>
+  <a class="toc-item" href="#ch14">14장</a>
+  <a class="toc-item" href="#epilogue">에필로그</a>
+</nav>
+
+<div class="main">
+<div class="reader">
+
+<!-- COVER -->
+<section id="cover">
+<div class="cover">
+  <div class="cover-badge">장편 스릴러 소설</div>
+  <h1 class="cover-title">열두 해의<br>침묵</h1>
+  <div class="cover-ornament"></div>
+  <p class="cover-epigraph">
+    "진실은 물과 같아서,<br>아무리 막아도 결국 틈새를 찾아낸다."
+  </p>
+</div>
+</section>
+
+<!-- CHARACTERS -->
+<section id="chars">
+<div class="chars-section">
+  <div class="chars-title">등장인물</div>
+  <div class="char-row"><span class="char-name">윤서하</span><span class="char-desc">32세. 탐사 매체 『심층』의 기자. 12년 전 어머니를 잃은 후 무도를 떠났다.</span></div>
+  <div class="char-row"><span class="char-name">강민준</span><span class="char-desc">35세. 무도파출소 경위. 섬 출신이 아니지만 3년째 근무 중. 말이 없고 눈이 날카롭다.</span></div>
+  <div class="char-row"><span class="char-name">이용택</span><span class="char-desc">71세. 무도의 최고령 어촌계장. 섬의 역사를 통째로 삼킨 사람처럼 보인다.</span></div>
+  <div class="char-row"><span class="char-name">오태식</span><span class="char-desc">58세. 무도 유일의 의사. 섬에서 태어나고 섬에서 늙어가고 있다.</span></div>
+  <div class="char-row"><span class="char-name">정혜림</span><span class="char-desc">44세. 무도 유일의 민박집 '파도' 운영. 눈치가 빠르고 입이 무겁다.</span></div>
+  <div class="char-row"><span class="char-name">윤명숙</span><span class="char-desc">서하의 어머니. 12년 전 절벽에서 추락해 사망. 공식 사인은 실족사.</span></div>
+  <div class="char-row"><span class="char-name">차도현</span><span class="char-desc">28세. 섬에 홀로 남겨진 청년. 어딘가 불안정해 보인다.</span></div>
+</div>
+</section>
+
+<!-- PROLOGUE -->
+<section id="prologue">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">프롤로그</div>
+    <h2 class="chapter-title">2012년 11월, 무도</h2>
+  </div>
+  <div class="prose">
+    <p>파도 소리가 멈추었다.</p>
+    <p>적어도 윤명숙에게는 그렇게 느껴졌다. 바람이 귓가를 때리는 소리, 낡은 방파제 난간을 어루만지는 파도, 그 모든 소리가 한꺼번에 사라진 것처럼 섬이 숨을 참고 있었다.</p>
+    <p>그녀는 핸드폰을 꺼냈다. 화면에는 딸의 이름이 떠 있었다 — 서하. 전화를 걸어야 한다고 생각했지만 손가락이 움직이지 않았다. 지금 서하에게 전화를 건다는 것은, 자신이 무엇을 알고 있는지를 딸에게 넘겨주는 일이었다. 그리고 그것은 딸을 위험에 빠뜨리는 일이기도 했다.</p>
+    <p>노트 한 권이 그녀의 가슴 안주머니에 있었다. 6개월간의 조사 결과가 빼곡히 적힌, 아무도 읽어서는 안 될 기록. 그러나 누군가는 반드시 읽어야 할 이야기.</p>
+    <p>뒤에서 발소리가 들렸다.</p>
+    <p>명숙은 돌아보지 않았다. 돌아보면 안 된다는 것을 알고 있었다. 이 섬에서는, 이 밤에는, 아는 척하는 것이 더 위험했다.</p>
+    <p>"명숙 씨."</p>
+    <p>목소리를 알아들을 수 있었다. 그렇기에 더 두려웠다.</p>
+    <p>"노트 돌려줘요."</p>
+    <p>명숙은 한 발 물러섰다. 발밑에서 자갈이 무너지는 소리가 났다. 뒤는 절벽이었다.</p>
+    <p>"이미 늦었어요," 그녀가 말했다. "이미 보냈으니까."</p>
+    <p>거짓말이었다.</p>
+    <p>하지만 그 거짓말이 자신의 목숨을 살릴 수 있다고 생각했다.</p>
+    <p>틀린 생각이었다.</p>
+  </div>
+</div>
+</section>
+
+<!-- PART 1 -->
+<div class="part-header" id="part1">
+  <div class="part-number">제 1 부</div>
+  <div class="part-title">귀 환</div>
+</div>
+
+<!-- CH 1 -->
+<section id="ch1">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 1 장</div>
+    <div class="chapter-date">2024년 10월</div>
+  </div>
+  <div class="prose">
+    <p>인천항에서 무도까지는 쾌속선으로 두 시간 반이었다.</p>
+    <p>윤서하는 갑판에 서지 않았다. 객실 창가 자리에 앉아 바다를 바라보는 척하면서, 사실은 자신의 무릎 위에 놓인 봉투를 내려다보고 있었다. 흰색 봉투. 보내는 사람 없음. 소인은 무도.</p>
+    <p>봉투는 사흘 전 편집실로 배달되었다.</p>
+    <p>서하가 근무하는 탐사 매체 『심층』의 주소로 온 것이었다. 개인 주소가 아니라 회사 주소로. 즉, 발신인은 윤서하가 기자라는 사실을 알고 있었다.</p>
+    <p>봉투 안에는 두 가지가 들어 있었다.</p>
+    <p>첫 번째는 사진 한 장. 흑백. 절벽 아래 부서진 바위들. 12년 전, 이 사진과 똑같은 장소에서 그녀의 어머니가 발견되었다.</p>
+    <p>두 번째는 메모지. 손으로 쓴 세 줄.</p>
+    <div class="doc-box">
+      <p><em>당신의 어머니는 실족한 것이 아닙니다.</em><br>
+      <em>이제 또 누군가 죽을 것입니다.</em><br>
+      <em>12년.</em></p>
+    </div>
+    <p>서하는 봉투를 다시 가방에 집어넣었다.</p>
+    <p>쾌속선이 감속하기 시작했다. 멀리 무도의 윤곽이 보였다. 화산암이 깎인 것처럼 날카로운 해안선. 낮은 구릉. 드문드문 올라가는 연기.</p>
+    <p>12년 만이었다.</p>
+    <p>어머니 장례를 치르고 짐을 챙겨 나온 이후로 한 번도 돌아오지 않았다. 친척도 없었고 친구도 없었다. 어머니는 서하가 열두 살 때 아버지와 이혼하고 이 섬에 들어왔다. 서하는 서울에서 아버지와 살다가 대학 입학 후 독립했고, 무도에는 방학 때만 내려왔다. 어머니와의 사이가 나쁜 것은 아니었지만, 가깝다고 하기도 어려웠다.</p>
+    <p>그런 어머니가 왜 이 섬에서 12년을 살았는지, 서하는 제대로 알지 못했다.</p>
+    <p>페리가 부두에 닿았다. 서하는 가방을 들고 일어섰다.</p>
+    <p class="scene-break">✦ ✦ ✦</p>
+    <p>파도민박은 섬 북쪽 끝, 방파제에서 도보로 오 분 거리에 있었다.</p>
+    <p>서하가 예약 전화를 걸었을 때 주인은 잠시 침묵했다가 말했다. "윤서하 씨요?" 이름을 말하기도 전에. 오래된 섬이 그렇듯, 모두가 모두를 알고 있었다.</p>
+    <p>민박집 문을 열자 정혜림이 카운터 뒤에서 고개를 들었다. 서하보다 열두 살쯤 많어 보이는 여자. 눈이 깊고 표정이 절제되어 있었다.</p>
+    <p>"오셨어요."</p>
+    <p>"네." 서하는 숙박 카드에 이름을 적었다. "오래 묵을 것 같아요. 일주일 이상은."</p>
+    <p>"무슨 일로 오셨어요?" 혜림이 물었다. 직접적인 질문이었다.</p>
+    <p>"취재 때문이요. 섬 관련 기사를 쓰려고요."</p>
+    <p>혜림의 눈이 잠깐 좁아졌다가 다시 원래대로 돌아왔다. "방은 2층이에요. 바다 보여요."</p>
+    <p>짐을 풀고 창문을 열었다. 10월의 바다는 회색이었다. 파도가 낮고 조용했다. 저 멀리 수평선이 흐릿하게 녹아 있었다.</p>
+    <p>서하는 노트북을 꺼내고 어머니에 관해 알고 있는 것들을 다시 정리했다.</p>
+    <p>윤명숙, 사망 당시 54세. 직업은 자유기고가. 무도에서 12년 거주. 2012년 11월 17일, 섬 동쪽 절벽 아래에서 시신으로 발견됨. 공식 사인: 실족에 의한 추락사. 사건은 단순 사고로 처리되었고 재수사 요청은 기각되었다.</p>
+    <p>그리고 메모지의 세 줄.</p>
+    <p><em>12년.</em></p>
+    <p>서하는 달력을 펼쳤다. 어머니가 사망한 날짜. 11월 17일. 지금으로부터 28일 후.</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 2 -->
+<section id="ch2">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 2 장</div>
+  </div>
+  <div class="prose">
+    <p>무도파출소는 섬의 중심부, 유일한 슈퍼마켓 옆에 있었다.</p>
+    <p>서하가 문을 열고 들어가자 한 남자가 책상에 앉아 서류를 보고 있었다. 키가 크고 어깨가 넓었다. 짧게 깎은 머리, 오른쪽 턱 아래 작은 흉터. 서하와 눈이 마주쳤을 때 그는 표정 변화가 없었다.</p>
+    <p>"강민준 경위님이세요?"</p>
+    <p>"네."</p>
+    <p>서하는 명함을 내밀었다. 탐사 매체 『심층』, 윤서하.</p>
+    <p>경위는 명함을 보았다. "기자세요."</p>
+    <p>"취재를 위해 무도에 왔어요. 협조를 부탁드리고 싶어서요."</p>
+    <p>"어떤 취재요?"</p>
+    <p>서하는 잠시 망설였다. "12년 전 사망 사건이요. 윤명숙 씨 건."</p>
+    <p>강민준이 처음으로 표정을 바꿨다. 아주 조금. 눈썹이 미세하게 움직였다.</p>
+    <p>"단순 사고로 종결된 건인데요."</p>
+    <p>"저는 그분의 딸이에요."</p>
+    <p>침묵.</p>
+    <p>경위는 서하를 다시 한 번 훑어보았다. 이번에는 다른 시선으로. 분석하는 눈이 아니라 어딘가 조심스러워하는 눈.</p>
+    <p>"그건 몰랐네요."</p>
+    <p>"이 섬에 오신 지 얼마나 됐어요?"</p>
+    <p>"3년 됐어요."</p>
+    <p>"그럼 어머니 사망 당시에는 안 계셨군요."</p>
+    <p>"그렇죠."</p>
+    <p>서하는 의자에 앉았다. 물어봐도 되는지 확인하지 않았다. 경위는 제지하지 않았다.</p>
+    <p>"당시 파출소장이 누구였는지 아세요?"</p>
+    <p>"서류상으로는 알아요. 김형태 전 소장이요. 지금은 퇴직했어요."</p>
+    <p>"연락처 알 수 있을까요?"</p>
+    <p>강민준은 서하를 오래 바라보았다. "기사로 쓰실 건가요?"</p>
+    <p>"모르겠어요. 아직은요."</p>
+    <p>다시 침묵. 경위는 서랍을 열었다. 메모지에 뭔가를 적어 서하에게 내밀었다.</p>
+    <p>"전 소장 연락처예요. 본인이 드리는 게 아니에요. 포털에서 찾을 수 있는 정보예요."</p>
+    <p>서하는 메모지를 받았다. "감사합니다."</p>
+    <p>"그리고." 강민준이 서하가 일어서기 전에 말했다. "밤에 혼자 다니지 마세요. 이 섬은 가로등이 별로 없어요."</p>
+    <p>조언인지 경고인지 알 수 없는 말이었다.</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 3 -->
+<section id="ch3">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 3 장</div>
+  </div>
+  <div class="prose">
+    <p>무도의 인구는 삼백이십 명이었다.</p>
+    <p>주민 대부분은 어업에 종사했다. 젊은 사람은 거의 없었다. 학교는 초등학교만 있었고 학생이 일곱 명이었다.</p>
+    <p>서하는 섬을 걸으며 사람들을 관찰했다. 오래된 섬이 그렇듯, 외지인을 대하는 방식이 독특했다. 노골적으로 적대하는 것도, 반갑게 맞이하는 것도 아닌, 어떤 평가의 시선. 당신이 무엇을 하러 왔는지, 얼마나 오래 있을 건지, 어디까지 알고 있는지 가늠하는 눈빛.</p>
+    <p>어촌계장 이용택은 마을 북쪽 언덕배기 집에 살았다.</p>
+    <p>서하가 찾아갔을 때 노인은 마당에서 그물을 손질하고 있었다. 71세치고는 등이 곧았다. 손이 빠르고 익숙했다.</p>
+    <p>"어른께서 이용택 선생님이세요?"</p>
+    <p>노인이 고개를 들었다. 눈이 날카로웠다. 주름 사이에서 빛나는 눈이 서하의 얼굴을 한 번에 읽는 것 같았다.</p>
+    <p>"서하구나."</p>
+    <p>서하는 멈칫했다. "저를 아세요?"</p>
+    <p>"명숙 씨 딸이잖아. 눈이 똑같아." 노인은 그물을 내려놓았다. "들어오거라. 차 한 잔 내드마."</p>
+    <p>방 안은 오래된 가구들로 가득했다. 선반에는 무도의 옛 사진들이 줄지어 있었다. 흑백 사진들. 배들, 사람들, 바다.</p>
+    <p>서하는 조심스럽게 앉았다.</p>
+    <p>"어머니를 잘 아셨어요?"</p>
+    <p>"잘 알았지." 노인이 차를 끓이며 말했다. "명숙 씨가 이 섬에 처음 왔을 때부터. 어촌계장이라 이것저것 도와줬어."</p>
+    <p>"어머니가 왜 이 섬에 왔는지 아세요?"</p>
+    <p>노인은 잠깐 멈추었다.</p>
+    <p>"그건 본인한테 직접 들은 건 아니고." 그가 천천히 말했다. "아마도 조용히 살고 싶었던 것 아니겠어. 도시에서 살다가 지친 사람들이 섬에 많이 오거든."</p>
+    <p>"어머니가 기사를 쓰고 계셨다는 걸 아세요?"</p>
+    <p>이용택은 차를 들고 돌아와 서하 앞에 놓았다. 그리고 맞은편에 앉아서 서하를 바라보았다. 그 눈빛에 무언가가 있었다. 경계심은 아니었다. 슬픔 같은 것에 더 가까웠다.</p>
+    <p>"명숙 씨가 뭔가 조사하고 있다는 건 알았어. 그런데 서하 씨, 솔직히 말할게."</p>
+    <p>"네."</p>
+    <p>"그 일은 건드리지 않는 게 나아."</p>
+    <p>서하는 차를 마시지 않았다. "왜요?"</p>
+    <p>"명숙 씨처럼 될 수 있으니까."</p>
+    <p>침묵이 방을 채웠다. 먼 데서 파도 소리가 들렸다.</p>
+    <p>"어머니의 죽음이 사고가 아니라는 걸 아시는 거네요."</p>
+    <p>이용택은 대답하지 않았다. 그것이 대답이었다.</p>
+    <p>"선생님도 알고 계신 거 아니에요? 뭔가를."</p>
+    <p>노인은 창문을 바라보았다. "이 섬에는 오래된 것들이 있어. 오래된 것들은 건드리면 안 돼. 다 이유가 있어서 묻혀 있는 거야."</p>
+    <p>서하는 일어섰다. "어머니는 12년 전에 묻혔어요. 저는 12년 동안 묻어두고 살았어요." 그녀는 노인을 내려다보았다. "더는 못 하겠어요."</p>
+  </div>
+</div>
+</section>
+
+<!-- PART 2 -->
+<div class="part-header" id="part2">
+  <div class="part-number">제 2 부</div>
+  <div class="part-title">기 억</div>
+</div>
+
+<!-- CH 4 -->
+<section id="ch4">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 4 장</div>
+  </div>
+  <div class="prose">
+    <p>어머니의 방은 아직 있었다.</p>
+    <p>서하가 몰랐던 것은, 어머니가 살던 집이 현재 섬의 공유재산으로 남아있다는 것이었다. 혜림이 알려주었다. 아무도 들어가지 않지만 누구도 손대지 않은 채로 12년이 지났다.</p>
+    <p>"열쇠 갖고 싶으면 이용택 선생님한테 부탁하면 될 거예요."</p>
+    <p>왜 어촌계장이 열쇠를 갖고 있는지 물어보지 않았다.</p>
+    <p>이용택은 열쇠를 주었다. 아무 말 없이. 그것이 오히려 서하를 불안하게 했다. 노인이 말리지 않는다는 것은, 어쩌면 그녀가 직접 보기를 원한다는 뜻일 수도 있었다.</p>
+    <p>집은 섬 동쪽 언덕 중턱에 있었다. 작은 돌담집. 바다가 정면으로 보이는 위치. 마당에는 잡초가 무릎 높이까지 자라 있었다.</p>
+    <p>자물쇠를 열고 문을 밀었을 때 냄새가 났다. 오래된 종이 냄새, 습기 냄새, 그리고 어렴풋한 향수 냄새. 어머니 냄새였다.</p>
+    <p>서하는 잠시 문간에 서 있었다.</p>
+    <p>방 두 개, 부엌 하나, 작은 거실. 가구는 그대로였다. 책상 위에 찻잔이 있었다. 물은 증발했지만 찻잔은 그대로 거기 있었다. 12년 동안.</p>
+    <p>누군가 들어온 흔적이 없었다.</p>
+    <p>아니, 없는 것처럼 보였다.</p>
+    <p>서하는 책상 서랍을 열었다. 문구류, 메모지, 파일들. 어머니는 기자 출신 기고가였다. 서류 정리가 꼼꼼했다. 파일에는 라벨이 붙어 있었다. 여행 기사, 음식 기사, 인터뷰 원고.</p>
+    <p>그리고 맨 뒤에 라벨이 없는 파일.</p>
+    <p>열었다. 비어 있었다.</p>
+    <p>서하는 파일을 집어 들고 안쪽을 들여다보았다. 파일 안쪽 포켓에 작은 종이 조각이 끼워져 있었다. 어머니의 필체.</p>
+    <p>단어 하나였다.</p>
+    <div class="doc-box">
+      <p style="text-align:center; font-size: 1.2rem; font-weight: 600; color: var(--accent); letter-spacing: 0.2em;">1974.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CH 5 -->
+<section id="ch5">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 5 장</div>
+  </div>
+  <div class="prose">
+    <p>오태식 의원은 오전 아홉 시부터 오후 세 시까지만 진료를 보았다.</p>
+    <p>서하가 찾아갔을 때는 환자 두 명이 먼저 와 있었다. 모두 노인이었다. 그들은 서하를 보더니 나직이 뭔가를 속삭였다.</p>
+    <p>진료실은 작고 오래된 느낌이었다. 의약품 냄새와 요오드 냄새. 오태식이 나왔을 때 서하는 일어섰다.</p>
+    <p>"윤명숙 씨 딸이에요?" 그가 먼저 말했다.</p>
+    <p>"그렇게 생겼나 봐요."</p>
+    <p>"눈이요." 그가 안경을 고쳐 썼다. "들어오세요."</p>
+    <p>진료실 안쪽에 조그만 면담 공간이 있었다. 의사는 그곳에 서하를 앉혔다.</p>
+    <p>"죽음에 대해 물어보러 오신 거죠."</p>
+    <p>"맞아요."</p>
+    <p>"저도 실족이라고 생각하지 않았어요." 그가 말했다. 너무 쉽게 말해서 서하가 오히려 의아했다. "명숙 씨는 그 절벽을 잘 알았어요. 그 위에 앉아서 노트 쓰는 걸 내가 여러 번 봤거든요."</p>
+    <p>"그럼 왜 사고로 처리됐어요?"</p>
+    <p>오태식은 잠시 말이 없었다. "당시 소장이 그렇게 결론 내렸어요. 내가 이의를 제기했지만 묵살됐어요."</p>
+    <p>"왜요?"</p>
+    <p>"나는 그걸 아직도 모르겠어요." 그가 말했다. "아니면, 알고 싶지 않은 건지."</p>
+    <p>서하는 그를 바라보았다. "어머니가 1974년에 대해 조사하고 있었다는 걸 아세요?"</p>
+    <p>의사의 눈이 흔들렸다.</p>
+    <p>잠깐만이었다. 하지만 서하는 놓치지 않았다.</p>
+    <p>"1974년이요." 그가 반복했다. 목소리에 색깔이 없었다.</p>
+    <p>"네. 어머니 집에서 그 숫자가 적힌 메모를 발견했어요."</p>
+    <p>"1974년이면," 오태식이 말했다. "그건 오래된 일이에요. 제가 태어나기도 전의 일이에요."</p>
+    <p>"선생님은 무도 태생이신 거죠?"</p>
+    <p>"네."</p>
+    <p>"섬에서 오래 사셨으니 그해에 어떤 일이 있었는지 아시겠네요."</p>
+    <p>"오래된 이야기는 많아요." 그가 일어서며 말했다. 면담이 끝났다는 신호였다. "1974년에 무도에서 어선 하나가 침몰했어요. 선원 다섯 명이 죽었어요. 그게 제가 아는 전부예요."</p>
+    <p>"다섯 명의 이름이요?"</p>
+    <p>"모르겠어요."</p>
+    <p>거짓말이었다. 서하는 알 수 있었다.</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 6 -->
+<section id="ch6">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 6 장</div>
+  </div>
+  <div class="prose">
+    <p>차도현을 처음 만난 것은 방파제에서였다.</p>
+    <p>저녁 무렵, 서하가 바다를 바라보고 있을 때 그가 다가왔다. 이십대 후반의 청년. 눈 밑이 거무스름했고 손이 많이 거칠었다.</p>
+    <p>"명숙 씨 딸이에요?"</p>
+    <p>"네."</p>
+    <p>"저 차도현이에요." 그가 말했다. 성을 먼저 말하는 방식이 어딘가 조심스럽게 느껴졌다. "명숙 씨가 저한테 잘해주셨어요. 먹을 것도 주시고. 이것저것."</p>
+    <p>서하는 그를 보았다. "어머니를 아셨군요."</p>
+    <p>"네. 돌아가시기 전에 자주 말씀 나눴어요." 그가 발밑의 자갈을 바라보았다. "저한테 한 가지 부탁을 하셨어요."</p>
+    <p>"어떤 부탁요?"</p>
+    <p>청년은 주머니에서 USB 드라이브를 꺼냈다. 오래된 것이었다. 케이스가 닳아 있었다.</p>
+    <p>"이걸 딸한테 주라고 하셨어요. 딸이 언젠가 오게 될 거라고."</p>
+    <p>서하는 손이 떨렸다. USB를 받아 들었다. 그리고 도현을 바라보았다.</p>
+    <p>"12년 동안 갖고 계셨어요?"</p>
+    <p>"네." 도현의 눈에 뭔가가 떠올랐다. 두려움 같은 것. "버리려고 한 적도 있었어요. 무서워서. 그런데 버리면 안 될 것 같아서."</p>
+    <p>"무섭다고요? 왜요?"</p>
+    <p>도현은 대답하지 않았다. 대신 이렇게 말했다.</p>
+    <p>"조심하세요. 이 섬은." 그가 잠시 멈추었다. "기억을 가진 사람이 너무 많아요."</p>
+    <p>그리고 그는 돌아섰다.</p>
+    <p>서하는 그의 등을 바라보았다. 그리고 USB를 꽉 쥐었다.</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 7 -->
+<section id="ch7">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 7 장</div>
+  </div>
+  <div class="prose">
+    <p>USB에는 파일 하나가 있었다.</p>
+    <p>파일 이름은 '서하에게'.</p>
+    <p>텍스트 파일이었다. 서하는 노트북을 열고 파일을 클릭했다. 손이 떨렸다.</p>
+    <p>12년 전 어머니의 글이 화면을 채웠다.</p>
+
+    <div class="doc-box">
+      <div class="doc-header">윤명숙 → 윤서하 / 2012년 11월</div>
+      <p>서하야.</p>
+      <p>이 파일을 네가 읽고 있다면, 나는 이미 없는 것이겠지. 아니었으면 좋겠지만, 아마 아닐 거야. 나는 내가 무엇을 알게 됐는지 알고 있고, 그게 어떤 결과를 낳을지도 알고 있어.</p>
+      <p>엄마가 왜 이 섬에 왔는지 이야기해야 할 것 같아.</p>
+      <p>2000년도, 엄마가 기자로 일할 때 무도 어업 분쟁에 관한 기사를 썼어. 작은 기사였고 별 반향이 없었지만, 그 취재를 하면서 오래된 기록을 하나 보게 됐어. 1974년 침몰 사고에 관한 기록이었어. 선원 다섯 명이 죽었다고 되어 있었는데, 보험금이 이상하게 많이 지급되어 있었어. 그리고 생존자 이름이 세 명 있었는데, 그 이름들 중 하나가 나중에 무도 어촌계장을 지낸 사람과 같은 이름이었어.</p>
+      <p>그때는 그냥 넘어갔어. 오래된 기록이고, 내 기사와 직접 관련도 없었으니까.</p>
+      <p>그런데 2000년에 이혼하고 혼자 지내면서, 이상하게 그 기록이 자꾸 생각나더라. 그래서 2001년에 무도로 왔어. 직접 확인해보고 싶었어. 어쩌면 그것보다 조용히 살 곳이 필요했던 거기도 해.</p>
+      <p>처음 5-6년은 아무것도 안 했어. 그냥 살았어. 그런데 2008년에 사건이 하나 있었어. 50대 남자가 절벽에서 떨어졌어. 역시 실족사로 처리됐어. 그 사람 이름이 박재환이었는데, 그 이름이 1974년 침몰 당시 생존자 명단에 있었어.</p>
+      <p>우연이라고 생각할 수도 있어. 하지만 엄마는 기자야. 아니었어. 우연.</p>
+      <p>그 다음부터 본격적으로 조사했어. 4년이 걸렸어.</p>
+      <p><strong>서하야, 내가 알게 된 것을 이야기할게.</strong></p>
+      <p>1974년 11월. 어선 '무도호'가 서해에서 침몰했어. 선원 여덟 명. 이 중 다섯 명이 사망하고 세 명이 생존했어. 생존자는 이용택(당시 21세), 박재환(당시 24세), 오창근(당시 26세).</p>
+      <p>공식 기록은 기상 악화로 인한 침몰이야. 그런데 그게 아니었어.</p>
+      <p>당시 무도호 선주는 조창석이라는 사람이었어. 배에 막대한 보험을 걸어두고 있었어. 침몰 직전 그는 생존자 셋에게 제안을 했어. 배를 고의로 침몰시키고 보험금을 나누자고. 그 대가로, 나머지 선원 다섯 명은...</p>
+      <p>서하야. 나머지 다섯 명은 익사가 아니었어. 그들은 익사하기 전에 이미 죽어 있었어.</p>
+      <p>그리고 그 돈으로 세 명은 이 섬에 자리를 잡았어. 이용택은 어촌계장이 됐어. 오창근은 오태식 원장의 아버지야. 박재환은 2008년에 죽었어. 누구한테? 나는 모르겠어. 하지만 생각이 있어.</p>
+      <p>그 다섯 명의 유족들이 아직 무도에 있어.</p>
+      <p>서하야, 이 섬에서 사람들이 죽어가고 있어. 조용히, 사고처럼 포장되어서. 그리고 나는 그 연결고리를 찾았어. 하지만 아직 증거가 충분하지 않아. 증거를 더 모으려고 했는데, 내가 조사하고 있다는 걸 누군가 알게 된 것 같아.</p>
+      <p>무섭지 않다고 하면 거짓말이야. 무서워. 그런데 그 다섯 명이 억울하게 죽었어. 가족도 없이. 기록에서도 지워진 채로. 누군가는 말해야 해.</p>
+      <p>딸한테 이 짐을 주는 것 같아서 미안해. 다른 방법이 없었어.</p>
+      <p><em>사랑해, 서하야.</em></p>
+      <p style="margin-top: 1rem; font-size: 13px; color: var(--ink-faint);">추신: 노트는 이용택 집 북쪽 돌담 아래 항아리에 넣어뒀어. 아직 거기 있을 거야.</p>
+    </div>
+
+    <p>서하는 한동안 화면을 바라보았다.</p>
+    <p>눈물이 나지 않았다. 너무 많은 것들이 한꺼번에 밀려와서 어떤 감정을 먼저 느껴야 할지 알 수 없었다.</p>
+    <p>어머니는 알고 있었다. 처음부터.</p>
+    <p>어머니는 죽을 수도 있다는 걸 알면서도 멈추지 않았다.</p>
+    <p>그리고 결국.</p>
+    <p>서하는 파일을 닫았다. 그리고 민박집 창문 너머 캄캄한 바다를 바라보았다.</p>
+    <p>내일 이용택 집 돌담을 찾아야 했다.</p>
+  </div>
+</div>
+</section>
+
+<!-- PART 3 -->
+<div class="part-header" id="part3">
+  <div class="part-number">제 3 부</div>
+  <div class="part-title">진 실</div>
+</div>
+
+<!-- CH 8 -->
+<section id="ch8">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 8 장</div>
+  </div>
+  <div class="prose">
+    <p>강민준은 서하가 편의점 앞 벤치에 앉아 있는 것을 발견했다.</p>
+    <p>자정이 넘은 시각이었다. 서하는 따뜻한 캔음료를 두 손으로 감싸 쥔 채 아무것도 보지 않는 눈으로 앉아 있었다. 그는 잠시 망설이다가 그 옆에 앉았다.</p>
+    <p>서하가 그를 바라보았다.</p>
+    <p>"술 마시고 싶었는데 술이 없어서요." 그녀가 말했다.</p>
+    <p>"편의점 바로 앞인데요."</p>
+    <p>"알아요. 사기 싫었어요."</p>
+    <p>강민준은 대답하지 않았다. 바다 쪽을 바라보았다.</p>
+    <p>"어머니 집에 들어가셨나요?" 그가 물었다.</p>
+    <p>"네."</p>
+    <p>"뭔가 찾으셨어요?"</p>
+    <p>서하는 그를 보았다. "경위님은 왜 무도에 오셨어요?"</p>
+    <p>"발령받아서요."</p>
+    <p>"자원하셨나요?"</p>
+    <p>잠시 침묵.</p>
+    <p>"네."</p>
+    <p>"왜요?"</p>
+    <p>강민준은 대답하기 전에 하늘을 올려다보았다. 섬의 하늘은 별이 많았다. 가로등이 없어서.</p>
+    <p>"외조부가 무도 출신이에요." 그가 말했다. "1974년에 죽었어요."</p>
+    <p>서하는 말을 잃었다.</p>
+    <p>"무도호 선원이셨어요?"</p>
+    <p>강민준이 그녀를 바라보았다. "알고 계시네요."</p>
+    <p>"방금 알았어요."</p>
+    <p>그들은 한동안 말이 없었다.</p>
+    <p>"3년 전에 왜 왔어요?" 서하가 물었다.</p>
+    <p>"외할머니가 돌아가시기 전에 말씀하셨어요. 당신 남편이 어떻게 죽었는지." 경위가 말했다. "공식 기록은 침몰이에요. 하지만 당신은 알고 있었어요. 52년 동안 알고 있었으면서 아무 말도 못 한 거예요."</p>
+    <p>"왜요?"</p>
+    <p>"두려워서요. 그리고 섬에 아직 가족이 있으니까. 잘못 건드리면."</p>
+    <p>"복수하러 오신 거예요?"</p>
+    <p>"아니요." 경위는 단호하게 말했다. "확인하러 왔어요. 이용택이 내 외조부를 죽인 사람인지."</p>
+    <p>"확인했어요?"</p>
+    <p>"거의요."</p>
+    <p>서하는 손의 음료를 바닥에 내려놓았다. "어머니의 죽음과 박재환 씨 죽음도 조사하고 있었어요?"</p>
+    <p>"박재환 씨는 조사할 수 없었어요. 제가 오기 전 일이니까." 그가 말했다. "하지만 윤명숙 씨 사건 기록은 전부 읽었어요. 이상한 점이 많았어요."</p>
+    <p>"어머니를 죽인 게 이용택이라고 생각해요?"</p>
+    <p>"확신하지는 못했어요. 지금도."</p>
+    <p>서하는 일어섰다. "내일 이용택 집 돌담 근처를 찾아볼 거예요. 어머니의 노트가 거기 있을 수 있어요."</p>
+    <p>강민준이 그녀를 올려다보았다. "혼자요?"</p>
+    <p>"같이 가실 건가요?"</p>
+    <p>경위는 잠시 생각하더니 일어섰다.</p>
+    <p>"낮에 가요." 그가 말했다. "밤에 그 집 근처에서 파헤치다가 들키면 안 되니까."</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 9 -->
+<section id="ch9">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 9 장</div>
+  </div>
+  <div class="prose">
+    <p>아침 여섯 시.</p>
+    <p>무도의 아침은 일렀다. 어선들이 나가기 전에 방파제가 붐볐다. 이용택도 아침마다 바다를 보러 나온다는 것을 혜림에게 들었다.</p>
+    <p>강민준과 서하는 그 시간에 이용택의 집을 찾았다.</p>
+    <p>집 북쪽 돌담. 어머니의 메모대로였다. 돌담과 흙벽 사이에 오래된 항아리가 묻혀 있었다. 강민준이 땅을 살짝 파자 항아리의 주둥이가 보였다.</p>
+    <p>항아리 안에 비닐봉지로 밀봉된 노트 한 권이 있었다.</p>
+    <p>어머니의 노트였다.</p>
+    <p>서하는 그것을 꺼내 들었다. 표지에 아무것도 적혀 있지 않았다. 안을 열었다. 어머니의 글씨가 빼곡했다.</p>
+    <p>이름들이 있었다. 날짜들이 있었다. 증언들이 있었다.</p>
+    <p>그리고 사진 몇 장이 끼워져 있었다. 어머니가 직접 찍은 것들. 그 중 하나는 이용택이 어떤 사람과 이야기하는 장면이었다. 어두운 곳에서, 누군가와 마주 앉아. 상대방 얼굴은 보이지 않았다.</p>
+    <p>"돌아가요."</p>
+    <p>강민준이 말했다. 서하는 노트를 품에 안고 일어섰다.</p>
+    <p>그때 이용택이 뒤에 서 있었다.</p>
+    <p>언제부터 있었는지 알 수 없었다. 노인은 발소리 없이 다가와 있었다.</p>
+    <p>그들은 서로를 바라보았다. 세 사람 사이에 아침 공기가 얼어붙었다.</p>
+    <p>이용택의 눈이 노트를 보았다. 그리고 서하를 보았다.</p>
+    <p>"명숙 씨가 남겼구나."</p>
+    <p>"네."</p>
+    <p>"읽었어?"</p>
+    <p>"읽을 거예요."</p>
+    <p>노인은 오래 서하를 바라보았다. 그러더니 조용히 말했다.</p>
+    <p>"집으로 들어와라."</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 10 -->
+<section id="ch10">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 10 장</div>
+  </div>
+  <div class="prose">
+    <p>이용택이 처음으로 입을 열었다.</p>
+    <p>그는 말하기 전에 차를 끓였다. 손이 전혀 떨리지 않았다. 서하는 그것이 무서웠다. 두려움이 없는 사람처럼 보였다.</p>
+    <p>"1974년 11월 17일이었어."</p>
+    <p>서하는 날짜를 들었을 때 숨이 멎는 것 같았다. 11월 17일. 어머니가 죽은 날짜와 같았다.</p>
+    <p>"나는 스물한 살이었어. 배에서 일한 지 일 년도 안 됐을 때야."</p>
+    <p>강민준은 아무 말 없이 앉아 있었다. 서하는 그의 눈을 볼 수 없었다.</p>
+    <p>"조창석이라는 선주가 우리를 불렀어. 박재환이랑 나랑 창근이랑. 오창근이야. 태식이 아버지. 셋이 불려갔는데, 선주가 말하더라고. 배에 보험 들었다고. 일부러 침몰시키면 한 명당 오백만 원씩 주겠다고."</p>
+    <p>"1974년 오백만 원이면." 강민준이 처음으로 말했다. "지금으로 치면."</p>
+    <p>"엄청난 돈이지. 나는 거절했어."</p>
+    <p>서하가 눈을 좁혔다.</p>
+    <p>"거절했다고요?"</p>
+    <p>"처음에는." 노인이 차를 마셨다. "그런데 박재환이 하겠다고 했어. 창근이도. 나는 못 하겠다고 했는데." 그가 멈추었다. "조창석이 말했어. 거절하면 너를 먼저 죽이겠다고. 네 가족도."</p>
+    <p>침묵.</p>
+    <p>"그래서 같이 탔어. 그날 밤. 나머지 다섯 명은 아무것도 몰랐어. 그냥 일하러 나온 거야. 우리가."</p>
+    <p>"죽였어요?" 서하가 말했다.</p>
+    <p>노인은 대답하지 않았다.</p>
+    <p>"직접."</p>
+    <p>"나는 손을 대지 않았어." 그가 말했다. "창근이와 재환이가. 나는 보았어. 거기 있었어. 막지 않았어."</p>
+    <p>강민준이 자리에서 일어섰다. 서하는 그를 바라보았다. 그의 얼굴이 창백했다.</p>
+    <p>"외조부 이름이 강성민이에요." 그가 말했다.</p>
+    <p>이용택의 눈이 그를 보았다.</p>
+    <p>"강성민 선원. 기억하세요?"</p>
+    <p>노인이 눈을 감았다.</p>
+    <p>"기억해." 그가 말했다. 목소리가 처음으로 떨렸다. "서른두 살이었어. 딸이 하나 있다고 했어."</p>
+    <p>강민준은 아무 말도 하지 않았다.</p>
+    <p>"나는 그날 이후로," 이용택이 말했다. "50년을 살면서 하루도 잊은 적이 없어. 하루도."</p>
+    <p>"그래서요?" 서하가 말했다. 목소리가 날카로웠다. "기억한다고 해서 용서가 되는 건 아니잖아요."</p>
+    <p>"나도 알아." 노인이 눈을 떴다. "그래서 명숙 씨를."</p>
+    <p>그가 말을 멈추었다.</p>
+    <p>"어머니한테 뭘 하셨어요?"</p>
+    <p>"막으려고 했어." 이용택이 말했다. "명숙 씨를 죽인 건 내가 아니야. 그걸 믿어줘야 해. 명숙 씨가 노트를 공개하려 한다는 걸 알고 나는 막으려고 했어. 그런데."</p>
+    <p>"그런데요?"</p>
+    <p>"박재환이 먼저 알았어."</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 11 -->
+<section id="ch11">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 11 장</div>
+  </div>
+  <div class="prose">
+    <p>"박재환은 2008년에 죽었잖아요." 서하가 말했다.</p>
+    <p>"박재환 아들이 있어." 이용택이 말했다. "박승우. 섬에 없어. 15년 전에 나갔어. 그런데 연락은 하고 있었어."</p>
+    <p>강민준이 핸드폰을 꺼냈다.</p>
+    <p>"이름이 박승우요?"</p>
+    <p>"응. 그놈이." 노인이 말했다. "아버지한테 모든 걸 들었어. 창근이도 아들한테 말했고. 죄를 유산으로 남긴 거야."</p>
+    <p>"어머니를 죽인 게 박승우예요?"</p>
+    <p>이용택은 대답하지 않았다. 하지만 그것이 대답이었다.</p>
+    <p>"2008년에 박재환 씨가 죽은 것도요?"</p>
+    <p>"창근이가 했어."</p>
+    <p>"왜요?"</p>
+    <p>"재환이가 자백하려고 했어. 늙어서 겁이 났다고. 창근이가 막은 거야."</p>
+    <p>강민준이 전화를 들었다. 서하는 그를 바라보다가 노인에게 시선을 돌렸다.</p>
+    <p>"어머니가 돌아가신 날 밤에 선생님이 거기 계셨어요?"</p>
+    <p>이용택은 눈을 감았다.</p>
+    <p>"나는 막으려 했어. 명숙 씨한테 경고를 주려고 갔었어. 그런데 도착했을 때는 이미."</p>
+    <p>"이미."</p>
+    <p>"승우 놈이 먼저 와 있었어."</p>
+    <p>서하의 손이 의자 팔걸이를 꽉 쥐었다.</p>
+    <p>"봤어요? 직접."</p>
+    <p>노인이 눈을 떴다. 그의 눈에 눈물이 있었다.</p>
+    <p>"봤어."</p>
+    <p>"그런데 신고하지 않았어요?"</p>
+    <p>"무서웠어." 그가 말했다. "창근이한테 알려지면 나도 죽을 것 같았어. 나는 오 년이 넘도록 아무 말 못 하고 살았어."</p>
+    <p>"그래서 제한테 편지를 보낸 거예요? 이 섬으로 오라고."</p>
+    <p>이용택은 잠시 말이 없었다.</p>
+    <p>"나는 이제 늙었어." 그가 말했다. "오래 살면서 너무 많은 것을 혼자 안고 살았어. 이제 죽기 전에." 그가 서하를 바라보았다. "명숙 씨가 쓴 것들이 세상에 나와야 한다고 생각했어."</p>
+  </div>
+</div>
+</section>
+
+<!-- PART 4 -->
+<div class="part-header" id="part4">
+  <div class="part-number">제 4 부</div>
+  <div class="part-title">심 판</div>
+</div>
+
+<!-- CH 12 -->
+<section id="ch12">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 12 장</div>
+  </div>
+  <div class="prose">
+    <p>오태식은 강민준의 전화를 받고 삼십 분 만에 파출소로 나왔다.</p>
+    <p>그는 처음에는 부인했다. 아무것도 모른다고 했다. 아버지가 1974년에 무도호에 탔던 건 사실이지만, 사고에 대해서는 알지 못한다고 했다.</p>
+    <p>그러다 이용택 노인이 들어왔을 때 말이 바뀌었다.</p>
+    <p>"아버지한테 들었어요." 오태식이 말했다. 의자에 앉아 두 손을 무릎 위에 올린 채로. "아버지가 돌아가시기 전에. 술 드시고. 평소에는 절대 말씀 안 하셨는데."</p>
+    <p>"박승우가 윤명숙 씨를 죽였다는 것도 알고 있었나요?"</p>
+    <p>"몰랐어요." 그가 말했다. "진짜예요. 명숙 씨가 돌아가셨을 때 저도 사고인 줄 알았어요. 나중에 박재환 씨 이야기 듣고 나서야. 어쩌면이라고 생각했지만."</p>
+    <p>"신고 안 했어요."</p>
+    <p>"신고하면 제 아버지 이야기가 나오니까요."</p>
+    <p>서하는 파출소 구석에 서서 이 모든 것을 듣고 있었다.</p>
+    <p>분노가 없었다. 있어야 할 것 같은데 없었다. 그 자리에는 어떤 무거운 피로감이 있었다. 50년 된 비밀이 한꺼번에 쏟아지면서 방 안의 공기 자체가 달라진 것 같았다.</p>
+    <p>강민준이 서하에게 왔다.</p>
+    <p>"박승우 연락처를 확보했어요. 현재 인천에 있어요. 광역수사대에 연락해뒀어요."</p>
+    <p>"체포될 수 있나요?"</p>
+    <p>"어머니 건은 시효가." 그가 말하다가 멈추었다.</p>
+    <p>서하는 알고 있었다. 살인죄 공소시효는 25년이었다. 2012년 살인이면 2037년까지. 아직이었다.</p>
+    <p>"가능해요." 강민준이 말했다.</p>
+    <p>서하는 눈을 감았다.</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 13 -->
+<section id="ch13">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 13 장</div>
+  </div>
+  <div class="prose">
+    <p>박승우는 이틀 후 체포되었다.</p>
+    <p>인천의 한 아파트에서. 달아나려는 시도는 없었다. 형사들이 문을 두드렸을 때 그는 집 안에 있었다.</p>
+    <p>강민준에게서 연락이 왔을 때 서하는 어머니의 집 마당에 앉아 있었다. 잡초 사이에 작은 꽃이 피어 있었다. 어머니가 심어두었을 것 같은 종류의 꽃.</p>
+    <p>"체포됐어요."</p>
+    <p>서하는 대답하지 않았다.</p>
+    <p>"서하 씨."</p>
+    <p>"네, 들었어요."</p>
+    <p>침묵.</p>
+    <p>"어때요?"</p>
+    <p>서하는 꽃을 바라보았다. "모르겠어요. 기쁘지가 않아요."</p>
+    <p>"당연해요."</p>
+    <p>"어머니가 살아 있었으면 어떻게 됐을까 생각해요." 그녀가 말했다. "체포 소식을 들으면 어떤 표정을 지었을까."</p>
+    <p>강민준은 대답하지 않았다. 서하는 그것이 좋았다. 위로의 말이 아닌 침묵. 그냥 거기 있어주는 것.</p>
+    <p>"어머니 노트는 기사로 쓸 거예요." 서하가 말했다. "그게 어머니가 원하던 거니까."</p>
+    <p>"공식 수사 결과가 나오기 전에는 어려울 수도 있어요."</p>
+    <p>"알아요. 기다릴 거예요."</p>
+    <p>바람이 불었다. 마당의 잡초들이 흔들렸다.</p>
+    <p>"강 경위님."</p>
+    <p>"네."</p>
+    <p>"외조부 이야기는 기사에 안 써도 돼요?"</p>
+    <p>강민준은 잠시 말이 없었다. "써도 괜찮아요. 이제는."</p>
+    <p>"고마워요."</p>
+    <p>"아니에요."</p>
+  </div>
+</div>
+</section>
+
+<!-- CH 14 -->
+<section id="ch14">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">제 14 장</div>
+  </div>
+  <div class="prose">
+    <p>이용택은 경찰서에 자수했다.</p>
+    <p>살인방조. 증거인멸 묵인. 그리고 윤명숙 살인 목격 후 신고 불이행.</p>
+    <p>노인은 모든 진술에 서명했다. 손이 떨리지 않았다. 진술서를 읽을 때 눈이 흐릿했지만, 그것은 노안 때문인지 다른 이유 때문인지 알 수 없었다.</p>
+    <p>오태식은 공범 혐의로 조사를 받았다. 직접 가담은 아니었지만 사실을 알고도 은폐한 것이 문제였다.</p>
+    <p>서하는 두 사람 모두의 자술서를 확보했다. 노트와 함께.</p>
+    <p>어머니가 USB에 남긴 내용, 노트의 기록, 두 노인의 진술. 거기에 강민준의 증언까지 더해지면 기사는 완성될 것이었다.</p>
+    <p>박승우의 혐의는 생각보다 여러 층위였다. 윤명숙 살인 외에도 아버지 박재환을 협박해 침묵하게 만들었다가 그가 자백 의사를 밝히자 오창근을 사주해 살인을 교사한 혐의. 모든 것이 50년 전의 비밀을 지키기 위한 것이었다.</p>
+    <p>50년 된 비밀은 그렇게 끝났다.</p>
+  </div>
+</div>
+</section>
+
+<!-- EPILOGUE -->
+<section id="epilogue">
+<div class="chapter">
+  <div class="chapter-header">
+    <div class="chapter-num">에필로그</div>
+    <div class="chapter-date">2025년 3월</div>
+  </div>
+  <div class="prose">
+    <p>기사가 게재되었다.</p>
+    <p>제목은 『침묵의 섬: 무도호 사건과 50년의 진실』이었다.</p>
+    <p>서하가 쓴 기사였다. 총 다섯 편의 연재. 1974년 사건부터 어머니의 죽음까지, 그리고 박승우의 체포까지.</p>
+    <p>기사는 많이 읽혔다. 포털 실검에 올랐다. 사람들은 댓글을 달았다. 분노하고, 슬퍼하고, 질문했다.</p>
+    <p>서하는 그 댓글들을 읽지 않았다. 읽을 필요가 없었다.</p>
+    <p class="scene-break">✦ ✦ ✦</p>
+    <p>봄이 되어 다시 무도를 찾았을 때, 섬은 변하지 않은 것 같았다.</p>
+    <p>파도는 여전했다. 바람도 같았다. 방파제는 여전히 낡았고, 연기는 여전히 올라갔다.</p>
+    <p>다른 것들이 있었다. 이용택의 집은 비어 있었다. 의원은 문이 닫혀 있었다. 차도현은 섬을 떠났다는 말을 혜림에게 들었다. 어디로 갔는지는 아무도 몰랐다.</p>
+    <p>강민준은 아직 무도에 있었다.</p>
+    <p>방파제에서 만났다. 그는 여전히 말이 없었고, 눈은 여전히 날카로웠다.</p>
+    <p>"전근 신청 안 했어요?"</p>
+    <p>"했는데 반려됐어요." 그가 말했다. "인원이 없다고."</p>
+    <p>"싫지 않아요? 이 섬이."</p>
+    <p>강민준은 바다를 바라보았다. "싫지 않아요. 이제는."</p>
+    <p>서하도 바다를 바라보았다.</p>
+    <p>어머니가 살았던 곳. 어머니가 죽은 곳. 어머니가 진실을 위해 12년을 보낸 곳.</p>
+    <p>"저도 한동안 더 있으려고요." 서하가 말했다.</p>
+    <p>"취재요?"</p>
+    <p>"아니요."</p>
+    <p>그냥 있고 싶었다. 이 파도 소리 속에, 어머니가 살았던 공기 속에, 조금 더.</p>
+    <p>어머니가 사랑했던 이 섬에.</p>
+    <p>바람이 불어왔다. 서하는 눈을 감지 않았다. 그대로 맞았다.</p>
+    <p>멀리서 어선 하나가 돌아오고 있었다.</p>
+  </div>
+</div>
+</section>
+
+<div class="epilogue-note">
+  <div class="fin-mark">— 끝 —</div>
+  <p>이 소설의 무도(霧島)는 가상의 섬입니다.<br>
+  그러나 이 이야기 속 침묵은 가상이 아닙니다.<br><br>
+  진실은 물과 같아서, 아무리 막아도 결국 틈새를 찾아낸다고 믿습니다.<br><br>
+  이 소설을, 스스로의 목소리를 잃은 모든 이들에게 바칩니다.</p>
+</div>
+
+</div><!-- /reader -->
+</div><!-- /main -->
+
+<script>
+const sections = document.querySelectorAll('section[id]');
+const tocItems = document.querySelectorAll('.toc-item');
+const pf = document.getElementById('pf');
+const pp = document.getElementById('pp');
+
+function updateProgress() {
+  const scrollTop = window.scrollY;
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docH > 0 ? Math.round((scrollTop / docH) * 100) : 0;
+  pf.style.width = pct + '%';
+  pp.textContent = pct + '%';
+}
+
+function updateTOC() {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 80) current = s.id;
+  });
+  tocItems.forEach(a => {
+    const href = a.getAttribute('href').replace('#', '');
+    a.classList.toggle('active', href === current);
+  });
+}
+
+window.addEventListener('scroll', () => { updateProgress(); updateTOC(); }, { passive: true });
+updateProgress(); updateTOC();
+
+tocItems.forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const id = a.getAttribute('href').replace('#', '');
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>
